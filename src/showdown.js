@@ -1,10 +1,16 @@
 //
 // showdown.js -- A javascript port of Markdown.
 //
+// Modifications
 // Copyright (c) 2011 Chris Spencer
 // 
-// Copyright (c) 2010 Andris Reinman
+// PHP Markdown Extra
+// Copyright (c) 2009 Michel Fortin
 //
+// node-markdown
+// Copyright (c) 2010 Andris Reinman
+// 
+// Original showdown.js
 // Copyright (c) 2007 John Fraser.
 //
 // Original Markdown Copyright (c) 2004-2005 John Gruber
@@ -359,6 +365,8 @@ var _RunBlockGamut = function(text) {
 // tags like paragraphs, headers, and list items.
 //
   text = _DoHeaders(text);
+  
+  text = _DoTables(text);
 
   // Do Horizontal Rules:
   var key = hashBlock("<hr />");
@@ -1324,6 +1332,144 @@ var escapeCharacters = function(text, charsToEscape, afterBackslash) {
 var escapeCharacters_callback = function(wholeMatch,m1) {
   var charCodeToEscape = m1.charCodeAt(0);
   return "~E"+charCodeToEscape+"E";
+}
+
+//
+// Markdown Extra ported functions
+//
+
+var _DoTables = function (text) {
+//
+// Form HTML tables.
+//
+  //
+  // Find tables with leading pipe.
+  //
+  //  | Header 1 | Header 2
+  //  | -------- | --------
+  //  | Cell 1   | Cell 2
+  //  | Cell 3   | Cell 4
+  //
+  /*$text = preg_replace_callback('
+    {
+      ^              # Start of a line
+      [ ]{0,3}  # Allowed whitespace.
+      [|]              # Optional leading pipe (present)
+      (.+) \n            # $1: Header row (at least one pipe)
+      
+      [ ]{0,3}  # Allowed whitespace.
+      [|] ([ ]*[-:]+[-| :]*) \n  # $2: Header underline
+      
+      (              # $3: Cells
+        (?>
+          [ ]*        # Allowed whitespace.
+          [|] .* \n      # Row content.
+        )*
+      )
+      (?=\n|\Z)          # Stop at final double newline.
+    }xm',
+    array(&$this, '_doTable_leadingPipe_callback'), $text);*/
+  text = text.replace(/^[ ]{0,3}[|](.+)\n[ ]{0,3}[|]([ ]*[-:]+[-| :]*)\n(((?=([ ]*[|].*\n))(?:[ ]*[|].*\n))*)(?=\n)/gm,
+    _doTable_leadingPipe_callback);
+  
+  //
+  // Find tables without leading pipe.
+  //
+  //  Header 1 | Header 2
+  //  -------- | --------
+  //  Cell 1   | Cell 2
+  //  Cell 3   | Cell 4
+  //
+  /*
+  $text = preg_replace_callback('
+    {
+      ^              # Start of a line
+      [ ]{0,'.$less_than_tab.'}  # Allowed whitespace.
+      (\S.*[|].*) \n        # $1: Header row (at least one pipe)
+      
+      [ ]{0,'.$less_than_tab.'}  # Allowed whitespace.
+      ([-:]+[ ]*[|][-| :]*) \n  # $2: Header underline
+      
+      (              # $3: Cells
+        (?>
+          .* [|] .* \n    # Row content
+        )*
+      )
+      (?=\n|\Z)          # Stop at final double newline.
+    }xm',
+    array(&$this, '_DoTable_callback'), $text);*/
+  text = text.replace(/^[ ]{0,3}(.+)\n[ ]{0,3}([ ]*[-:]+[-| :]*)\n(((?=(.*[|].*\n))(?:.*[|].*\n))*)(?=\n)/gm,
+    _doTable_callback);
+
+  return text;
+}
+var _doTable_leadingPipe_callback = function () {
+  var content = arguments[3];
+  
+  // Remove leading pipe for each row.
+  content = content.replace(/^[ ]*[|]/gm, '');
+  
+  return _doTable_callback(arguments[0], arguments[1], arguments[2], content);
+}
+var _doTable_callback = function () {
+  var head       = arguments[1];
+  var underline  = arguments[2];
+  var content    = arguments[3];
+
+  // Remove any tailing pipes for each line.
+  head       = head.replace(/[|][ ]*\n/gm, '\n');
+  underline  = underline.replace(/[|][ ]*\n/gm, '\n');
+  content    = content.replace(/[|][ ]*\n/gm, '\n');
+  
+  // Reading alignement from header underline.
+  var separators = underline.split(/[ ]*[|][ ]*/);
+  var attr = {};
+  for (var i = 0, len = separators.length; i < len; ++i) {
+    if (separators[i].match(/^[ ]*[-]+:[ ]*$/))       attr[i] = ' align="right"';
+    else if (separators[i].match(/^[ ]*:[-]+:[ ]*$/)) attr[i] = ' align="center"';
+    else if (separators[i].match(/^[ ]*:[-]+[ ]*$/))  attr[i] = ' align="left"';
+    else                                              attr[i] = '';
+  }
+  
+  // Parsing span elements, including code spans, character escapes, 
+  // and inline HTML tags, so that pipes inside those gets ignored.
+  // head    = $this->parseSpan($head); // TODO
+  var headers  = head.split(/[ ]*[|][ ]*/);
+  var col_count = headers.length;
+  
+  // Write column headers.
+  var text = "<table>\n";
+  text += "<thead>\n";
+  text += "<tr>\n";
+  for (var i = 0; i < col_count; ++i) {
+    text += "  <th"+attr[i]+">" + _RunSpanGamut(headers[i]) + "</th>\n";
+  }
+  text += "</tr>\n";
+  text += "</thead>\n";
+  
+  // Split content by row.
+  var rows = content.split(/\n/);
+  
+  text += "<tbody>\n";
+  for (var i = 0, len = rows.length; i < len; ++i) {
+    // Parsing span elements, including code spans, character escapes, 
+    // and inline HTML tags, so that pipes inside those gets ignored.
+    // $row = $this->parseSpan($row); // TODO
+    
+    // Split row by cell.
+    var row_cells = rows[i].split(/[ ]*[|][ ]*/);
+    // row_cells = array_pad($row_cells, $col_count, '');  // TODO
+    
+    text += "<tr>\n";
+    for (var j = 0, len2 = row_cells.length; j < len2; ++j) {
+      text += "  <td"+attr[j]+">" + _RunSpanGamut(row_cells[j]) + "</td>\n";
+    }
+    text += "</tr>\n";
+  }
+  text += "</tbody>\n";
+  text += "</table>";
+  
+  return text;
 }
 
 } // end of Showdown.converter
