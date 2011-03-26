@@ -942,6 +942,24 @@ var _DoCodeSpans = function(text) {
       c = _EncodeCode(c);
       return m1+"<code>"+c+"</code>";
     });
+    
+  text = text.replace(/(^|[^\\])(%%)([^\r]*?[^%])\2(?!%)/gm,
+    function(wholeMatch,m1,m2,m3,m4) {
+      var c = m3;
+      c = c.replace(/^([ \t]*)/g,"");  // leading whitespace
+      c = c.replace(/[ \t]*$/g,"");  // trailing whitespace
+      c = _EncodeCode(c);
+      return m1+'<span class="mathInline">%%'+c+"%%</span>";
+    });
+
+  text = text.replace(/(^|[^\\])(~D~D)([^\r]*?[^~])\2(?!~D)/gm,
+    function(wholeMatch,m1,m2,m3,m4) {
+      var c = m3;
+      c = c.replace(/^([ \t]*)/g,"");  // leading whitespace
+      c = c.replace(/[ \t]*$/g,"");  // trailing whitespace
+      c = _EncodeCode(c);
+      return m1+'<span class="math">~D~D'+c+"~D~D</span>";
+    });
 
   return text;
 }
