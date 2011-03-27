@@ -1,4 +1,3 @@
-var md_vanilla = new Showdown.converter();
 var md_ext = new Showdown.converter();
 $.extend(md_ext.config, {
   tables: true,
@@ -44,7 +43,7 @@ var tests = ["Amps and angle encoding", "Auto links", "Backslash escapes",
   "Tabs", "Tidyness"];
  
 $.each(tests, function (i, name) {
-  markdownTest(name, md_vanilla);
+  markdownTest(name, md_ext);
 });
 
 module("extensions test suite");

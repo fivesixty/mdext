@@ -1457,7 +1457,7 @@ var _DoTables = function (text) {
       (?=\n|\Z)          # Stop at final double newline.
     }xm',
     array(&$this, '_DoTable_callback'), $text);*/
-  text = text.replace(/^[ ]{0,3}(.+)\n[ ]{0,3}([ ]*[-:]+[-| :]*)\n(((?=(.*[|].*\n))(?:.*[|].*\n))*)(?=\n)/gm,
+  text = text.replace(/^[ ]{0,3}(\S.*[|].*)\n[ ]{0,3}([ ]*[-:]+[-| :]*)\n(((?=(.*[|].*\n))(?:.*[|].*\n))*)(?=\n)/gm,
     _doTable_callback);
 
   return text;
