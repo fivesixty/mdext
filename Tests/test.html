@@ -14,16 +14,13 @@
       $("li.fail").live("click", function () {
         $(this).toggleClass("show");
       });
+      var done = QUnit.done;
+      QUnit.done = function () {
+        done();
+        $("li.fail ol").css("display", "none");
+      };
     });
   </script>
-  <style>
-    li.fail ol {
-      display: none;
-    }
-    li.fail.show ol {
-      display: block;
-    }
-  </style>
 </head>
 <body>
   <h1 id="qunit-header">QUnit example</h1>
