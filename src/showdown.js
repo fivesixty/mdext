@@ -887,6 +887,7 @@ _ProcessListItems = function(list_str) {
   );
 
   // attacklab: strip sentinel
+  list_str = list_str.replace(/<\/li></g, "</li>\n<");
   list_str = list_str.replace(/~0/g,"");
   
   g_list_level--;
