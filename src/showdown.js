@@ -97,18 +97,19 @@ var g_html_blocks;
 // (see _ProcessListItems() for details):
 var g_list_level = 0;
 
+var config = this.config = {
+  stripHTML: false,
+  headerautoid: false,
+  tables: false
+}
 
-this.makeHtml = function(text, strip) {
+this.makeHtml = function(text) {
 //
 // Main function. The order in which other subs are called here is
 // essential. Link and image substitutions need to happen before
 // _EscapeSpecialCharsWithinTagAttributes(), so that any *'s or _'s in the <a>
 // and <img> tags get encoded.
 //
-
-  if (strip === undefined) {
-    strip = true;
-  }
 
   // Clear the global hashes. If we don't clear these, you get conflicts
   // from other articles when generating a page which contains more than
@@ -161,7 +162,7 @@ this.makeHtml = function(text, strip) {
   // attacklab: Restore tildes
   text = text.replace(/~T/g,"~");
   
-  if (strip) {
+  if (config.stripHTML) {
     text = stripUnwantedHTML(text);
   }
 
@@ -366,7 +367,9 @@ var _RunBlockGamut = function(text) {
 //
   text = _DoHeaders(text);
   
-  text = _DoTables(text);
+  if (config.tables) {
+    text = _DoTables(text);
+  }
 
   // Do Horizontal Rules:
   var key = hashBlock("<hr />");
@@ -681,10 +684,24 @@ var _DoHeaders = function(text) {
   //  --------
   //
   text = text.replace(/^(.+)[ \t]*\n=+[ \t]*\n+/gm,
-    function(wholeMatch,m1){return hashBlock('<h1 id="' + headerId(m1) + '">' + _RunSpanGamut(m1) + "</h1>");});
+    function(wholeMatch,m1) {
+      if (config.headerautoid) {
+        return hashBlock('<h1 id="' + headerId(m1) + '">' + _RunSpanGamut(m1) + "</h1>");
+      } else {
+        return hashBlock('<h1>' + _RunSpanGamut(m1) + "</h1>");
+      }
+    }
+  );
 
   text = text.replace(/^(.+)[ \t]*\n-+[ \t]*\n+/gm,
-    function(matchFound,m1){return hashBlock('<h2 id="' + headerId(m1) + '">' + _RunSpanGamut(m1) + "</h2>");});
+    function(matchFound,m1) {
+      if (config.headerautoid) {
+        return hashBlock('<h2 id="' + headerId(m1) + '">' + _RunSpanGamut(m1) + "</h2>");
+      } else {
+        return hashBlock('<h2>' + _RunSpanGamut(m1) + "</h2>");
+      }
+    }
+  );
 
   // atx-style headers:
   //  # Header 1
@@ -708,7 +725,11 @@ var _DoHeaders = function(text) {
   text = text.replace(/^(\#{1,6})[ \t]*(.+?)[ \t]*\#*\n+/gm,
     function(wholeMatch,m1,m2) {
       var h_level = m1.length;
-      return hashBlock("<h" + h_level + ' id="' + headerId(m2) + '">' + _RunSpanGamut(m2) + "</h" + h_level + ">");
+      if (config.headerautoid) {
+        return hashBlock("<h" + h_level + ' id="' + headerId(m2) + '">' + _RunSpanGamut(m2) + "</h" + h_level + ">");
+      } else {
+        return hashBlock("<h" + h_level + '>' + _RunSpanGamut(m2) + "</h" + h_level + ">");
+      }
     });
 
   function headerId(m) {
@@ -769,7 +790,7 @@ var _DoLists = function(text) {
       // HTML block parser. This is a hack to work around the terrible
       // hack that is the HTML block parser.
       result = result.replace(/\s+$/,"");
-      result = "<"+list_type+">" + result + "</"+list_type+">\n";
+      result = "<"+list_type+">\n" + result + "</"+list_type+">\n";
       return result;
     });
   } else {
@@ -860,7 +881,7 @@ _ProcessListItems = function(list_str) {
 
   // attacklab: strip sentinel
   list_str = list_str.replace(/~0/g,"");
-
+  
   g_list_level--;
   return list_str;
 }
