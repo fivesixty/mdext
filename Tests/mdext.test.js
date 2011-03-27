@@ -6,7 +6,7 @@ function markdownTest(name) {
     var html = "";
     var text = "";
     $.get(name + '.text', function (data) {
-      text = $.trim(mdext.makeHtml(data, false));
+      text = $.trim(mdext.makeHtml(data));
       if (!firstload) {
         firstload = true;
       } else {

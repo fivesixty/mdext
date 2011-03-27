@@ -611,7 +611,13 @@ var _DoImages = function(text) {
       \(          // literal paren
       [ \t]*
       ()          // no id, so leave $3 empty
-      <?(\S+?)>?      // src url = $4
+      <?
+        (         // src url = $4
+          (?:[^\(]*?\([^\)]*?\)\S*?)  // Match one depth of parentheses
+          |
+          (?:\S+?)  // Match 0 depth of parentheses
+        )
+      >?      
       [ \t]*
       (          // $5
         (['"])      // quote char = $6
@@ -623,7 +629,7 @@ var _DoImages = function(text) {
     )
     /g,writeImageTag);
   */
-  text = text.replace(/(!\[(.*?)\]\s?\([ \t]*()<?(\S+?)>?[ \t]*((['"])(.*?)\6[ \t]*)?\))/g,writeImageTag);
+  text = text.replace(/(!\[(.*?)\]\s?\([ \t]*()<?((?:[^\(]*?\([^\)]*?\)\S*?)|(?:\S*?))>?[ \t]*((['"])(.*?)\6[ \t]*)?\))/g,writeImageTag);
 
   return text;
 }
@@ -637,23 +643,17 @@ var writeImageTag = function(wholeMatch,m1,m2,m3,m4,m5,m6,m7) {
 
   if (!title) title = "";
   
-  if (url == "") {
-    if (link_id == "") {
-      // lower-case and turn embedded newlines into spaces
-      link_id = alt_text.toLowerCase().replace(/ ?\n/g," ");
-    }
-    url = "#"+link_id;
-    
+  if (url == "" && link_id !== "") {
+    // lower-case and turn embedded newlines into spaces
     if (g_urls[link_id] != undefined) {
       url = g_urls[link_id];
       if (g_titles[link_id] != undefined) {
         title = g_titles[link_id];
+      } else {
+        title = undefined;
       }
     }
-    else {
-      return whole_match;
-    }
-  }  
+  }
   
   alt_text = alt_text.replace(/"/g,"&quot;");
   url = escapeCharacters(url,"*_");
@@ -662,11 +662,11 @@ var writeImageTag = function(wholeMatch,m1,m2,m3,m4,m5,m6,m7) {
   // attacklab: Markdown.pl adds empty title attributes to images.
   // Replicate this bug.
 
-  //if (title != "") {
+  if (title !== undefined) {
     title = title.replace(/"/g,"&quot;");
     title = escapeCharacters(title,"*_");
     result +=  " title=\"" + title + "\"";
-  //}
+  }
   
   result += " />";
   
