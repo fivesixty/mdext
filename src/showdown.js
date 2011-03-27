@@ -101,7 +101,8 @@ var config = this.config = {
   stripHTML: false,
   headerautoid: false,
   tables: false,
-  math: false
+  math: false,
+  figures: false
 }
 
 this.makeHtml = function(text) {
@@ -603,7 +604,7 @@ var _DoImages = function(text) {
     )()()()()        // pad rest of backreferences
     /g,writeImageTag);
   */
-  text = text.replace(/(!\[(.*?)\][ ]?(?:\n[ ]*)?\[(.*?)\])()()()()/g,writeImageTag);
+  text = text.replace(/(![<>]?\[(.*?)\][ ]?(?:\n[ ]*)?\[(.*?)\])()()()()/g,writeImageTag);
 
   //
   // Next, handle inline images:  ![alt text](url "optional title")
@@ -637,7 +638,7 @@ var _DoImages = function(text) {
     )
     /g,writeImageTag);
   */
-  text = text.replace(/(!\[(.*?)\]\s?\([ \t]*()<?((?:[^\(]*?\([^\)]*?\)\S*?)|(?:\S*?))>?[ \t]*((['"])(.*?)\6[ \t]*)?\))/g,writeImageTag);
+  text = text.replace(/(![<>]?\[(.*?)\]\s?\([ \t]*()<?((?:[^\(]*?\([^\)]*?\)\S*?)|(?:\S*?))>?[ \t]*((['"])(.*?)\6[ \t]*)?\))/g,writeImageTag);
 
   return text;
 }
@@ -663,6 +664,15 @@ var writeImageTag = function(wholeMatch,m1,m2,m3,m4,m5,m6,m7) {
     }
   }
   
+  var figure = false, match;
+  if (match = whole_match.match(/^!([<>])/)) {
+    if (match[1] === ">") {
+      figure = "right";
+    } else if (match[1] === "<") {
+      figure = "left";
+    }
+  }
+  
   alt_text = alt_text.replace(/"/g,"&quot;");
   url = escapeCharacters(url,"*_");
   var result = "<img src=\"" + url + "\" alt=\"" + alt_text + "\"";
@@ -677,6 +687,15 @@ var writeImageTag = function(wholeMatch,m1,m2,m3,m4,m5,m6,m7) {
   }
   
   result += " />";
+  
+  if (config.figures && figure !== false) {
+    if (title === undefined || title === "") {
+      result = '<div class="figure ' + figure + '">\n  ' + result + '\n</div>';
+    } else {
+      result = '<div class="figure ' + figure + '">\n  ' + result +
+        '<br/>\n  <span>' + title + '</span>\n</div>';
+    }
+  }
   
   return result;
 }
@@ -1519,7 +1538,7 @@ var stripUnwantedHTML = function (html /*, allowedTags, allowedAttributes, force
     var allowedTags = arguments[1] || 
             'a|b|blockquote|code|del|dd|dl|dt|em|h1|h2|h3|h4|h5|h6|'+
             'i|img|li|ol|p|pre|sup|sub|strong|strike|ul|br|hr|span|'+
-            'table|th|tr|td|tbody|thead|tfoot',
+            'table|th|tr|td|tbody|thead|tfoot|div',
         allowedAttributes = arguments[2] || {
             'img': 'src|width|height|alt',
             'a':   'href',
@@ -1527,7 +1546,8 @@ var stripUnwantedHTML = function (html /*, allowedTags, allowedAttributes, force
             'span': 'class',
             'tr': 'rowspan',
             'td': 'colspan|align',
-            'th': 'rowspan|align'
+            'th': 'rowspan|align',
+            'div': 'class'
         }, forceProtocol = arguments[3] || true;
         
         testAllowed = new RegExp('^('+allowedTags.toLowerCase()+')$'),

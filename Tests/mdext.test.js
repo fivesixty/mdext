@@ -1,7 +1,8 @@
 var md_vanilla = new Showdown.converter();
 var md_ext = new Showdown.converter();
 $.extend(md_ext.config, {
-  tables: true
+  tables: true,
+  figures: true
 });
 
 function markdownTest(name, md) {
@@ -48,7 +49,7 @@ $.each(tests, function (i, name) {
 
 module("extensions test suite");
 
-var ext_tests = ["Tables"];
+var ext_tests = ["Figures", "Tables"];
 
 $.each(ext_tests, function (i, name) {
   markdownTest(name, md_ext);
