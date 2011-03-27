@@ -1362,6 +1362,8 @@ var escapeCharacters = function(text, charsToEscape, afterBackslash) {
 var doTrim = function(str) {
   if (str.trim !== undefined) {
     return str.trim();
+  } else if (typeof jQuery !== 'undefined') {
+    return $.trim(str);
   } else {
     return str.replace(/^\s\s*/, '').replace(/\s\s*$/, '');
   }
