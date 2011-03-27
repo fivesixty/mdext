@@ -1359,6 +1359,13 @@ var escapeCharacters = function(text, charsToEscape, afterBackslash) {
   return text;
 }
 
+var doTrim = function(str) {
+  if (str.trim !== undefined) {
+    return str.trim();
+  } else {
+    return str.replace(/^\s\s*/, '').replace(/\s\s*$/, '');
+  }
+}
 
 var escapeCharacters_callback = function(wholeMatch,m1) {
   var charCodeToEscape = m1.charCodeAt(0);
@@ -1450,7 +1457,7 @@ var _doTable_callback = function () {
   // Remove any tailing pipes for each line.
   head       = head.replace(/[|][ ]*$/gm, '\n');
   underline  = underline.replace(/[|][ ]*\n/gm, '\n');
-  content    = $.trim(content.replace(/[|][ ]*\n/gm, '\n'));
+  content    = doTrim(content.replace(/[|][ ]*\n/gm, '\n'));
   
   // Reading alignement from header underline.
   var separators = underline.split(/[ ]*[|][ ]*/);
@@ -1473,7 +1480,7 @@ var _doTable_callback = function () {
   text += "<thead>\n";
   text += "<tr>\n";
   for (var i = 0; i < col_count; ++i) {
-    text += "  <th"+attr[i]+">" + _RunSpanGamut($.trim(headers[i])) + "</th>\n";
+    text += "  <th"+attr[i]+">" + _RunSpanGamut(doTrim(headers[i])) + "</th>\n";
   }
   text += "</tr>\n";
   text += "</thead>\n";
@@ -1493,7 +1500,7 @@ var _doTable_callback = function () {
     
     text += "<tr>\n";
     for (var j = 0, len2 = row_cells.length; j < len2; ++j) {
-      text += "  <td"+attr[j]+">" + _RunSpanGamut($.trim(row_cells[j])) + "</td>\n";
+      text += "  <td"+attr[j]+">" + _RunSpanGamut(doTrim(row_cells[j])) + "</td>\n";
     }
     text += "</tr>\n";
   }
