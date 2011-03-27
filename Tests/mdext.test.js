@@ -26,30 +26,18 @@ function markdownTest(name) {
   });
 }
 
-test("markdown test suite", function () {
-  
-  markdownTest("Amps and angle encoding");
-  markdownTest("Auto links");
-  markdownTest("Backslash escapes");
-  markdownTest("Blockquotes with code blocks");
-  markdownTest("Code Blocks");
-  markdownTest("Code Spans");
-  markdownTest("Hard-wrapped paragraphs with list-like lines");
-  markdownTest("Horizontal rules");
-  markdownTest("Images");
-  markdownTest("Inline HTML (Advanced)");
-  markdownTest("Inline HTML (Simple)");
-  markdownTest("Inline HTML comments");
-  markdownTest("Links, inline style");
-  markdownTest("Links, reference style");
-  markdownTest("Links, shortcut references");
-  markdownTest("Literal quotes in titles");
-  markdownTest("Markdown Documentation - Basics");
-  markdownTest("Markdown Documentation - Syntax");
-  markdownTest("Nested blockquotes");
-  markdownTest("Ordered and unordered lists");
-  markdownTest("Strong and em together");
-  markdownTest("Tabs");
-  markdownTest("Tidyness");
-  
+module("markdown test suite");
+
+var tests = ["Amps and angle encoding", "Auto links", "Backslash escapes",
+  "Blockquotes with code blocks", "Code Blocks", "Code Spans",
+  "Hard-wrapped paragraphs with list-like lines", "Horizontal rules", "Images",
+  "Inline HTML (Advanced)", "Inline HTML (Simple)", "Inline HTML comments",
+  "Links, inline style", "Links, reference style", "Links, shortcut references",
+  "Literal quotes in titles", "Markdown Documentation - Basics",
+  "Markdown Documentation - Syntax",
+  "Nested blockquotes", "Ordered and unordered lists", "Strong and em together",
+  "Tabs", "Tidyness"];
+ 
+$.each(tests, function (i, name) {
+  markdownTest(name);
 });
