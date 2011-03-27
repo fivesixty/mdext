@@ -1,12 +1,16 @@
-var mdext = new Showdown.converter();
+var md_vanilla = new Showdown.converter();
+var md_ext = new Showdown.converter();
+$.extend(md_ext.config, {
+  tables: true
+});
 
-function markdownTest(name) {
+function markdownTest(name, md) {
   asyncTest(name, function () {
     var firstload = false;
     var html = "";
     var text = "";
     $.get(name + '.text', function (data) {
-      text = $.trim(mdext.makeHtml(data));
+      text = $.trim(md.makeHtml(data));
       if (!firstload) {
         firstload = true;
       } else {
@@ -39,5 +43,13 @@ var tests = ["Amps and angle encoding", "Auto links", "Backslash escapes",
   "Tabs", "Tidyness"];
  
 $.each(tests, function (i, name) {
-  markdownTest(name);
+  markdownTest(name, md_vanilla);
+});
+
+module("extensions test suite");
+
+var ext_tests = ["Tables"];
+
+$.each(ext_tests, function (i, name) {
+  markdownTest(name, md_ext);
 });

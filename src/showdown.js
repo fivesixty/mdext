@@ -100,7 +100,8 @@ var g_list_level = 0;
 var config = this.config = {
   stripHTML: false,
   headerautoid: false,
-  tables: false
+  tables: false,
+  math: false
 }
 
 this.makeHtml = function(text) {
@@ -894,7 +895,6 @@ _ProcessListItems = function(list_str) {
   return list_str;
 }
 
-
 var _DoCodeBlocks = function(text) {
 //
 //  Process Markdown `<pre><code>` blocks.
@@ -992,23 +992,25 @@ var _DoCodeSpans = function(text) {
       return m1+"<code>"+c+"</code>";
     });
     
-  text = text.replace(/(^|[^\\])(%%)([^\r]*?[^%])\2(?!%)/gm,
-    function(wholeMatch,m1,m2,m3,m4) {
-      var c = m3;
-      c = c.replace(/^([ \t]*)/g,"");  // leading whitespace
-      c = c.replace(/[ \t]*$/g,"");  // trailing whitespace
-      c = _EncodeCode(c);
-      return m1+'<span class="mathInline">%%'+c+"%%</span>";
-    });
+  if (config.math) {
+    text = text.replace(/(^|[^\\])(%%)([^\r]*?[^%])\2(?!%)/gm,
+      function(wholeMatch,m1,m2,m3,m4) {
+        var c = m3;
+        c = c.replace(/^([ \t]*)/g,"");  // leading whitespace
+        c = c.replace(/[ \t]*$/g,"");  // trailing whitespace
+        c = _EncodeCode(c);
+        return m1+'<span class="mathInline">%%'+c+"%%</span>";
+      });
 
-  text = text.replace(/(^|[^\\])(~D~D)([^\r]*?[^~])\2(?!~D)/gm,
-    function(wholeMatch,m1,m2,m3,m4) {
-      var c = m3;
-      c = c.replace(/^([ \t]*)/g,"");  // leading whitespace
-      c = c.replace(/[ \t]*$/g,"");  // trailing whitespace
-      c = _EncodeCode(c);
-      return m1+'<span class="math">~D~D'+c+"~D~D</span>";
-    });
+    text = text.replace(/(^|[^\\])(~D~D)([^\r]*?[^~])\2(?!~D)/gm,
+      function(wholeMatch,m1,m2,m3,m4) {
+        var c = m3;
+        c = c.replace(/^([ \t]*)/g,"");  // leading whitespace
+        c = c.replace(/[ \t]*$/g,"");  // trailing whitespace
+        c = _EncodeCode(c);
+        return m1+'<span class="math">~D~D'+c+"~D~D</span>";
+      });
+  }
 
   return text;
 }
@@ -1446,9 +1448,9 @@ var _doTable_callback = function () {
   var content    = arguments[3];
 
   // Remove any tailing pipes for each line.
-  head       = head.replace(/[|][ ]*\n/gm, '\n');
+  head       = head.replace(/[|][ ]*$/gm, '\n');
   underline  = underline.replace(/[|][ ]*\n/gm, '\n');
-  content    = content.replace(/[|][ ]*\n/gm, '\n');
+  content    = $.trim(content.replace(/[|][ ]*\n/gm, '\n'));
   
   // Reading alignement from header underline.
   var separators = underline.split(/[ ]*[|][ ]*/);
@@ -1471,7 +1473,7 @@ var _doTable_callback = function () {
   text += "<thead>\n";
   text += "<tr>\n";
   for (var i = 0; i < col_count; ++i) {
-    text += "  <th"+attr[i]+">" + _RunSpanGamut(headers[i]) + "</th>\n";
+    text += "  <th"+attr[i]+">" + _RunSpanGamut($.trim(headers[i])) + "</th>\n";
   }
   text += "</tr>\n";
   text += "</thead>\n";
@@ -1491,7 +1493,7 @@ var _doTable_callback = function () {
     
     text += "<tr>\n";
     for (var j = 0, len2 = row_cells.length; j < len2; ++j) {
-      text += "  <td"+attr[j]+">" + _RunSpanGamut(row_cells[j]) + "</td>\n";
+      text += "  <td"+attr[j]+">" + _RunSpanGamut($.trim(row_cells[j])) + "</td>\n";
     }
     text += "</tr>\n";
   }
