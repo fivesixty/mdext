@@ -369,6 +369,9 @@ var _RunBlockGamut = function(text) {
 //
   text = _DoHeaders(text);
   
+  // Escape pipes early for tables.
+  text = text.replace(/\\([\|])/g,escapeCharacters_callback);
+  
   if (config.tables) {
     text = _DoTables(text);
   }
@@ -1049,6 +1052,10 @@ var _EncodeCode = function(text) {
   text = text.replace(/</g,"&lt;");
   text = text.replace(/>/g,"&gt;");
 
+  // Pipes are escaped early, unescape them into escaped pipes.
+  // Need to find better solution.
+  text = text.replace(/~E124E/g, "\\|");
+  
   // Now, escape characters that are magic in Markdown:
   text = escapeCharacters(text,"\*_{}[]\\",false);
 
@@ -1429,8 +1436,6 @@ var _DoTables = function (text) {
     }xm',
     array(&$this, '_doTable_leadingPipe_callback'), $text);*/
   
-  text = text.replace(/\\\|/g, "~P");
-  
   text = text.replace(/^[ ]{0,3}[|](.+)\n[ ]{0,3}[|]([ ]*[-:]+[-| :]*)\n(((?=([ ]*[|].*\n))(?:[ ]*[|].*\n))*)(?=\n)/gm,
     _doTable_leadingPipe_callback);
   
@@ -1462,8 +1467,6 @@ var _DoTables = function (text) {
     array(&$this, '_DoTable_callback'), $text);*/
   text = text.replace(/^[ ]{0,3}(\S.*[|].*)\n[ ]{0,3}([ ]*[-:]+[-| :]*)\n(((?=(.*[|].*\n))(?:.*[|].*\n))*)(?=\n)/gm,
     _doTable_callback);
-
-  text = text.replace(/~P/g, "|");
 
   return text;
 }

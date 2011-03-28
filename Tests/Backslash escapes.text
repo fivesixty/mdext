@@ -32,6 +32,7 @@ Plus: \+
 
 Minus: \-
 
+Pipe: \|
 
 
 These should not, because they occur within a code block:
@@ -67,6 +68,8 @@ These should not, because they occur within a code block:
 	Plus: \+
 
 	Minus: \-
+	
+	Pipe: \|
 
 
 Nor should these, which occur in code spans:
@@ -102,6 +105,8 @@ Bang: `\!`
 Plus: `\+`
 
 Minus: `\-`
+
+Pipe: `\|`
 
 
 These should get escaped, even though they're matching pairs for
