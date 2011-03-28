@@ -1428,6 +1428,9 @@ var _DoTables = function (text) {
       (?=\n|\Z)          # Stop at final double newline.
     }xm',
     array(&$this, '_doTable_leadingPipe_callback'), $text);*/
+  
+  text = text.replace(/\\\|/g, "~P");
+  
   text = text.replace(/^[ ]{0,3}[|](.+)\n[ ]{0,3}[|]([ ]*[-:]+[-| :]*)\n(((?=([ ]*[|].*\n))(?:[ ]*[|].*\n))*)(?=\n)/gm,
     _doTable_leadingPipe_callback);
   
@@ -1459,6 +1462,8 @@ var _DoTables = function (text) {
     array(&$this, '_DoTable_callback'), $text);*/
   text = text.replace(/^[ ]{0,3}(\S.*[|].*)\n[ ]{0,3}([ ]*[-:]+[-| :]*)\n(((?=(.*[|].*\n))(?:.*[|].*\n))*)(?=\n)/gm,
     _doTable_callback);
+
+  text = text.replace(/~P/g, "|");
 
   return text;
 }
