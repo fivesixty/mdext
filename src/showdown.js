@@ -92,6 +92,8 @@ Showdown.converter = function() {
 var g_urls;
 var g_titles;
 var g_html_blocks;
+var g_print_refs;
+var g_print_refs_count;
 
 // Used to track when we're inside an ordered or unordered list
 // (see _ProcessListItems() for details):
@@ -102,7 +104,8 @@ var config = this.config = {
   headerautoid: false,
   tables: false,
   math: false,
-  figures: false
+  figures: false,
+  refprint: false
 }
 
 this.makeHtml = function(text) {
@@ -120,6 +123,8 @@ this.makeHtml = function(text) {
   g_urls = new Array();
   g_titles = new Array();
   g_html_blocks = new Array();
+  g_print_refs = {};
+  g_print_refs_count = 0;
 
   // attacklab: Replace ~ with ~T
   // This lets us use tilde as an escape char to avoid md5 hashes
@@ -166,6 +171,15 @@ this.makeHtml = function(text) {
   
   if (config.stripHTML) {
     text = stripUnwantedHTML(text);
+  }
+  
+  if (config.refprint && g_print_refs_count) {
+    var link_table = '<ul class="reflist print">';
+    for (i in g_print_refs) {
+      link_table += '<li>[' + g_print_refs[i] + ']: ' + i + '</li>'
+    }
+    link_table += '</ul>';
+    text += link_table;
   }
 
   return text;
@@ -565,7 +579,7 @@ var writeAnchorTag = function(wholeMatch,m1,m2,m3,m4,m5,m6,m7) {
         return whole_match;
       }
     }
-  }  
+  }
   
   url = escapeCharacters(url,"*_");
   var result = "<a href=\"" + url + "\"";
@@ -577,6 +591,13 @@ var writeAnchorTag = function(wholeMatch,m1,m2,m3,m4,m5,m6,m7) {
   }
   
   result += ">" + link_text + "</a>";
+  
+  if (config.refprint) {
+    if (!g_print_refs[url]) {
+      g_print_refs[url] = ++g_print_refs_count;
+    }
+    result += '<span class="linkref print">~E91E' + g_print_refs[url] + '~E93E</span>';
+  }
   
   return result;
 }
