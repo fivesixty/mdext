@@ -1634,14 +1634,14 @@ var stripUnwantedHTML = function (html /*, allowedTags, allowedAttributes, force
                 // force data: and javascript: links and images to #
                 if((name=="href" || name=="src") &&
                    (value.trim().substr(0, "javascript:".length)=="javascript:"
-                    || value.trim().substr(0, "data:".length)=="data:")) {
+                    || (name == "href" && value.trim().substr(0, "data:".length)=="data:"))) {
                     value = "#";
                 }
                 
                 // scope links and sources to http protocol
                 if (forceProtocol &&
                      (name=="href" || name=="src") &&
-                     !/^[a-zA-Z]{3,5}:\/\//.test(value)) {
+                     !/^[a-zA-Z]{3,6}:\/\//.test(value)) {
                   value = "http://" + value;
                 }
                 
