@@ -1641,7 +1641,8 @@ var stripUnwantedHTML = function (html /*, allowedTags, allowedAttributes, force
                 // scope links and sources to http protocol
                 if (forceProtocol &&
                      (name=="href" || name=="src") &&
-                     !/^[a-zA-Z]{3,6}:\/\//.test(value)) {
+                     !/^[a-zA-Z]{3,5}:\/\//.test(value) &&
+                     (value.length < 8 && value.trim().substr(0, "&#x6D;&#97;&#105;&#108;&#116;&#111;:".length)=="&#x6D;&#97;&#105;&#108;&#116;&#111;:")) {
                   value = "http://" + value;
                 }
                 
