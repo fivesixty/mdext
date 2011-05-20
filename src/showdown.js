@@ -105,7 +105,8 @@ var config = this.config = {
   tables: false,
   math: false,
   figures: false,
-  refprint: false
+  refprint: false,
+  github_flavouring: false
 }
 
 this.makeHtml = function(text) {
@@ -959,6 +960,23 @@ var _DoCodeBlocks = function(text) {
   // attacklab: sentinel workarounds for lack of \A and \Z, safari\khtml bug
   text += "~0";
   
+  if (config.github_flavouring) {  
+    text = text.replace(/\n```([a-zA-Z]+)?\s*\n((?:.*\n+)+?)(\n*```|(?=~0))/g,
+      function (wholeMatch, m1, m2) {
+        var codeblock = _EncodeCode(m2);
+        codeblock = _Detab(codeblock);
+        codeblock = codeblock.replace(/^\n+/g,""); // trim leading newlines
+        codeblock = codeblock.replace(/\n+$/g,""); // trim trailing whitespace
+      
+        if (m1) {
+          codeblock = "<pre><code class=\"" + m1 + "\">" + codeblock + "\n</code></pre>";
+        } else {
+          codeblock = "<pre><code>" + codeblock + "\n</code></pre>";
+        }
+        return hashBlock(codeblock);
+      });
+  }
+  
   text = text.replace(/(?:\n\n|^)((?:(?:[ ]{4}|\t).*\n+)+)(\n*[ ]{0,3}[^ \t\n]|(?=~0))/g,
     function(wholeMatch,m1,m2) {
       var codeblock = m1;
@@ -1576,7 +1594,8 @@ var stripUnwantedHTML = function (html /*, allowedTags, allowedAttributes, force
             'tr': 'rowspan',
             'td': 'colspan|align',
             'th': 'rowspan|align',
-            'div': 'class'
+            'div': 'class',
+            'code': 'class'
         }, forceProtocol = arguments[3] || true;
         
         testAllowed = new RegExp('^('+allowedTags.toLowerCase()+')$'),
